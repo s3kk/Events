@@ -1,0 +1,2 @@
+<globalevent name="GlobalBattle" interval="60000" event="script" value="BattleGlobalEvents.lua"/>
+<globalevent name="GlobalStart" type="start" event="script" value="BattleGlobalStart.lua"/>

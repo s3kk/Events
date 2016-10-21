@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<movements>
+	<!-- Dota -->
+	<movevent type="StepIn" uniqueid="5036" event="script" value="dota_templonormalp.lua" />
+	<movevent type="StepIn" uniqueid="5035" event="script" value="dota_templonormal.lua" />
+	<movevent type="StepIn" uniqueid="5040" event="script" value="dota.lua" />
+	<movevent type="StepIn" uniqueid="5031" event="script" value="blue.lua" />
+	<movevent type="StepIn" uniqueid="5032" event="script" value="red.lua" />
+</movements>

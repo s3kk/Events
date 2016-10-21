@@ -1,0 +1,3 @@
+<monster name="Protect Statue" file="Traps/statue.xml"/>
+<monster name="Castle" file="Traps/porta.xml"/>
+<monster name="Protect Castle" file="Traps/protectcastle.xml"/>

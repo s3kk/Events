@@ -1,0 +1,23 @@
+Em data/globalevents/script/BattleGlobalEvents.lua vai ter essa tabela:
+
+_Lib_Battle_Days = {
+["Monday"] = {
+["16:00"] = {players = 30},
+["21:30"] = {players = 20}
+},
+["Wednesday"] = {
+["19:00"] = {players = 16}
+},
+["Thursday"] = {
+["11:26"] = {players = 4},
+["20:30"] = {players = 10}
+}
+}
+
+
+["DIA DA SEMANA"] = {
+
+["HORARIO"] = {players = QUANTOS JOGADORES IRÃO PARTICIPAR}
+
+
+Regra: Sempre coloque números pares para os jogadores, do contrário o evento não irá iniciar.

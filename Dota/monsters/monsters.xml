@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<monsters>
+	<!-- Dota -->
+	<monster name="Gerador Azul I" file="Dota/Gerador Azul I.xml"/>
+	<monster name="Gerador Azul II" file="Dota/Gerador Azul II.xml"/>
+	<monster name="Gerador Azul III" file="Dota/Gerador Azul III.xml"/>
+    <monster name="Gerador Vermelho I" file="Dota/Gerador Vermelho I.xml"/>
+	<monster name="Gerador Vermelho II" file="Dota/Gerador Vermelho II.xml"/>
+	<monster name="Gerador Vermelho III" file="Dota/Gerador Vermelho III.xml"/>
+</monsters>

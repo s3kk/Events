@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mod name="Rush Event" version="1.0" author="Tibia Hosting por disponibilizar" contact="eduardo.yhago@hotmail.com" enabled="yes">
+<description>
+TUTORIAL DE COMO CONFIGURAR O EVENTO ACOMPANHE POR AQUI:
+q - mensagem que vai ser exibida quando o evento começar
+d_1 - posição do tempo vermelho ao começar evento
+d_2 - posição do tempo azul ao começar evento
+x - mensagem que vai ser exibida quando o evento não começar
+w - posição da sala de espera, onde os players vão ficar antes de começar
+lvl - level minimo para participar do evento
+v - a quantidade de frags que será necessária para o time ganhar
+mn - quantidade minima de players para começar o evento
+m - maximo de players dentro do evento
+o - mensagem exibida quando o time vermelho ganhar
+y - mensagem exibida quando o time azul ganhar
+i_1 - id do premio (agora é crystal coin = 2160)
+i_2 - quantidade do premio (agora esta 10 crystal coins)
+t - tempo para começar o evento (agora esta is 5 minutos)
+r - tempo em que os resultados da batalha serão mostrados aos players (agora esta 3 minutos)
+
+Adicione isto em 050-function.lua:
+-------------------------------------------------------------------------------------------------
+function doPlayerRemoveLethalConditions(cid)
+local tmp = {1, 2, 4, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 32768, 65536}
+for i = 1, #tmp do
+if(hasCondition(cid, tmp[i])) then doRemoveCondition(cid, tmp[i]) end
+end
+return true
+end
+-------------------------------------------------------------------------------------------------
+Adicione isto em login.lua:
+-------------------------------------------------------------------------------------------------
+registerCreatureEvent(cid, "RushCombat")
+registerCreatureEvent(cid, "RushAttack")
+registerCreatureEvent(cid, "RushDead")
+registerCreatureEvent(cid, "RushOutfit")
+-------------------------------------------------------------------------------------------------
+Agora daqui pra baixo você vai configurar de acordo com o tutorial acima, o resto se não tiver
+conhecimento não mecha em nada pois poderá bugar o evento e não daremos suporte:
+</description>
+<config name="re"><![CDATA[
+t = {
+a = 32145,
+g = 32146,
+l = 32147,
+u = 32148,
+h = 32149,
+wv = 32150,
+c = 0,
+q = "Rush Event has been started! Enjoy and have fun!",
+f = 5447,
+f_1 = 5448,
+f_2 = 5449,
+d_1 = {x = 26598, y = 26758, z = 7}, -- red temple
+d_2 = {x = 26655, y = 26726, z = 7}, -- blue temple
+x = "Event won't start bacause too few people were willing to participate",
+w = {x = 26628, y = 26804, z = 7},
+lvl = 80,
+v = 2,
+mn = 1,
+m = 3,
+o = "Event was completed, RED TEAM has won Rush Event!",
+y = "Event was completed, BLUE TEAM has won Rush Event!",
+i_1 = 2160,
+i_2 = 10,
+t = 1,
+r = 3
+}
+]]></config>
+<globalevent name="Recognition" interval="1500" event="script"><![CDATA[
+domodlib('re')
+function onThink(interval, lastExecution, thinkInterval)
+if(getGlobalStorageValue(t.a) == 1) then
+for _, pid in ipairs(getPlayersOnline()) do
+if getPlayerStorageValue(pid, t.f) == 1 then
+if(getPlayerStorageValue(pid, t.f_1) == 0) then
+doSendAnimatedText(getCreaturePosition(pid), "RED TEAM", TEXTCOLOR_RED)
+elseif(getPlayerStorageValue(pid, t.f_1) == 1) then
+doSendAnimatedText(getCreaturePosition(pid), "BLUE TEAM", TEXTCOLOR_LIGHTBLUE)
+end
+end
+end
+return true
+end
+return true
+end
+]]></globalevent>
+<talkaction words="!start" event="script"><![CDATA[
+domodlib('re')
+function onSay(cid, words, param, channel)
+if getPlayerGroupId(cid) > 3 then
+setGlobalStorageValue(t.g, 1)
+setGlobalStorageValue(t.u, 0)
+setGlobalStorageValue(t.l, 0)
+setGlobalStorageValue(t.a, 1)
+setGlobalStorageValue(t.c, 0)
+setGlobalStorageValue(t.wv, 0)
+doBroadcastMessage("Attention! Immediately register to Rush Event, event will start for ".. t.t .." minutes. All players can join to event typing this command: !rush", MESSAGE_STATUS_WARNING)
+addEvent(function()
+doBroadcastMessage("Rush event, started in 2 minutes. If you want to join, type this command: !rush", MESSAGE_STATUS_WARNING)
+end, (t.t - 2) * 1000 * 60)
+addEvent(function()
+doBroadcastMessage("Rush event, started in a minute. If you want to join, type this command: !rush", MESSAGE_STATUS_WARNING)
+end, (t.t - 1) * 1000 * 60)
+addEvent(start, t.t * 1000 * 60, cid)
+return true
+end
+return true
+end
+function results()
+if(getGlobalStorageValue(t.a) == 1) then
+local red = getGlobalStorageValue(t.l)
+local blue = getGlobalStorageValue(t.u)
+doBroadcastMessage("Rush Events, results:\nRed Team scored: ".. red .." frags.\nBlue Team scored: ".. blue .." frags.\nMatch is under way to ".. t.v .." frags.", MESSAGE_STATUS_WARNING)
+addEvent(results, t.r * 1000 * 60)
+end
+end
+function start(cid)
+if(getGlobalStorageValue(t.a) == 1 and getGlobalStorageValue(t.c) >= t.mn) then
+doBroadcastMessage(t.q, MESSAGE_STATUS_WARNING)
+setGlobalStorageValue(t.wv, 1)
+addEvent(results, t.r * 1000 * 60)
+for _, pid in ipairs(getPlayersOnline()) do
+local myOutfit = getCreatureOutfit(pid)
+local red = {lookType = myOutfit.lookType, lookHead = 94, lookBody = 94, lookLegs = 94, lookFeet = 94, lookTypeEx = 0, lookAddons = myOutfit.lookAddons}
+local blue = {lookType = myOutfit.lookType, lookHead = 86, lookBody = 86, lookLegs = 86, lookFeet = 86, lookTypeEx = 0, lookAddons = myOutfit.lookAddons}
+if getPlayerStorageValue(pid, t.f) == 1 then
+doCreatureAddHealth(pid, getCreatureMaxHealth(pid))
+doCreatureAddMana(pid, getCreatureMaxMana(pid))
+if((getPlayerStorageValue(pid, t.g) % 2) == 1) then
+doCreatureChangeOutfit(pid, red)
+setPlayerStorageValue(pid, t.h, 0)
+doTeleportThing(pid, t.d_1)
+setPlayerStorageValue(pid, t.f, 1)
+setPlayerStorageValue(pid, t.f_1, 0)
+setPlayerStorageValue(pid, t.f_2, 1)
+doSendMagicEffect(getCreaturePosition(pid), 10)
+doPlayerSendTextMessage(pid, MESSAGE_EVENT_ADVANCE, "You are in RED TEAM!\nThis battle will continue up to ".. t.v .." frags!")
+else
+doCreatureChangeOutfit(pid, blue)
+doTeleportThing(pid, t.d_2)
+setPlayerStorageValue(pid, t.h, 0)
+setPlayerStorageValue(pid, t.f, 1)
+setPlayerStorageValue(pid, t.f_1, 1)
+setPlayerStorageValue(pid, t.f_2, 0)
+doSendMagicEffect(getCreaturePosition(pid), 10)
+doPlayerSendTextMessage(pid, MESSAGE_EVENT_ADVANCE, "You are in BLUE TEAM!\nThis battle will continue up to ".. t.v .." frags!")
+end
+end
+end
+elseif(getGlobalStorageValue(t.c) < t.mn) then
+doBroadcastMessage(t.x, MESSAGE_STATUS_WARNING)
+setGlobalStorageValue(t.a, 0)
+for _, pid in ipairs(getPlayersOnline()) do
+if getPlayerStorageValue(pid, t.f) == 1 then
+setPlayerStorageValue(pid, t.f, -1)
+doTeleportThing(pid, getTownTemplePosition(getPlayerTown(pid)))
+doSendMagicEffect(getCreaturePosition(pid), CONST_ME_TELEPORT)
+end
+end
+end
+end
+]]></talkaction>
+<globalevent name="RushStart" time="00:09" event="script"><![CDATA[
+domodlib('re')
+function onTime(interval, lastExecution)
+setGlobalStorageValue(t.g, 1)
+setGlobalStorageValue(t.u, 0)
+setGlobalStorageValue(t.l, 0)
+setGlobalStorageValue(t.a, 1)
+setGlobalStorageValue(t.c, 0)
+setGlobalStorageValue(t.wv, 0)
+doBroadcastMessage("Attention! Immediately register to Rush Event, event will start for ".. t.t .." minutes. All players can join to event typing this command: !rush", MESSAGE_STATUS_WARNING)
+addEvent(function()
+doBroadcastMessage("Rush event, started in 2 minutes. If you want to join, type this command: !rush", MESSAGE_STATUS_WARNING)
+end, (t.t - 2) * 1000 * 60)
+addEvent(function()
+doBroadcastMessage("Rush event, started in a minute. If you want to join, type this command: !rush", MESSAGE_STATUS_WARNING)
+end, (t.t - 1) * 1000 * 60)
+addEvent(start, t.t * 1000 * 60, cid)
+end
+function results()
+if(getGlobalStorageValue(t.a) == 1) then
+local red = getGlobalStorageValue(t.l)
+local blue = getGlobalStorageValue(t.u)
+doBroadcastMessage("Rush Events, results:\nRed Team scored: ".. red .." frags.\nBlue Team scored: ".. blue .." frags.\nMatch is under way to ".. t.v .." frags.", MESSAGE_STATUS_WARNING)
+addEvent(results, t.r * 1000 * 60)
+end
+end
+function start(cid)
+if(getGlobalStorageValue(t.a) == 1 and getGlobalStorageValue(t.c) >= t.mn) then
+doBroadcastMessage(t.q, MESSAGE_STATUS_WARNING)
+setGlobalStorageValue(t.wv, 1)
+addEvent(results, t.r * 1000 * 60)
+for _, pid in ipairs(getPlayersOnline()) do
+local myOutfit = getCreatureOutfit(pid)
+local red = {lookType = myOutfit.lookType, lookHead = 94, lookBody = 94, lookLegs = 94, lookFeet = 94, lookTypeEx = 0, lookAddons = myOutfit.lookAddons}
+local blue = {lookType = myOutfit.lookType, lookHead = 86, lookBody = 86, lookLegs = 86, lookFeet = 86, lookTypeEx = 0, lookAddons = myOutfit.lookAddons}
+if getPlayerStorageValue(pid, t.f) == 1 then
+doCreatureAddHealth(pid, getCreatureMaxHealth(pid))
+doCreatureAddMana(pid, getCreatureMaxMana(pid))
+if((getPlayerStorageValue(pid, t.g) % 2) == 1) then
+doCreatureChangeOutfit(pid, red)
+setPlayerStorageValue(pid, t.h, 0)
+doTeleportThing(pid, t.d_1)
+setPlayerStorageValue(pid, t.f, 1)
+setPlayerStorageValue(pid, t.f_1, 0)
+setPlayerStorageValue(pid, t.f_2, 1)
+doSendMagicEffect(getCreaturePosition(pid), 10)
+doPlayerSendTextMessage(pid, MESSAGE_EVENT_ADVANCE, "You are in RED TEAM!\nThis battle will continue up to ".. t.v .." frags!")
+else
+doCreatureChangeOutfit(pid, blue)
+setPlayerStorageValue(pid, t.h, 0)
+doTeleportThing(pid, t.d_2)
+setPlayerStorageValue(pid, t.f, 1)
+setPlayerStorageValue(pid, t.f_1, 1)
+setPlayerStorageValue(pid, t.f_2, 0)
+doSendMagicEffect(getCreaturePosition(pid), 10)
+doPlayerSendTextMessage(pid, MESSAGE_EVENT_ADVANCE, "You are in BLUE TEAM!\nThis battle will continue up to ".. t.v .." frags!")
+end
+end
+end
+elseif(getGlobalStorageValue(t.c) < t.mn) then
+doBroadcastMessage(t.x, MESSAGE_STATUS_WARNING)
+setGlobalStorageValue(t.a, 0)
+for _, pid in ipairs(getPlayersOnline()) do
+if getPlayerStorageValue(pid, t.f) == 1 then
+setPlayerStorageValue(pid, t.f, -1)
+doTeleportThing(pid, getTownTemplePosition(getPlayerTown(pid)))
+doSendMagicEffect(getCreaturePosition(pid), CONST_ME_TELEPORT)
+end
+end
+end
+end
+]]></globalevent>
+<talkaction words="!rush" event="script"><![CDATA[
+domodlib('re')
+function onSay(cid, words, param, channel)
+if getGlobalStorageValue(t.a) == 1 and getGlobalStorageValue(t.wv) ~= 1 then
+if getPlayerLevel(cid) >= t.lvl then
+if getPlayerStorageValue(cid, t.f) == -1 then
+if getTilePzInfo(getPlayerPosition(cid)) == true then
+if getGlobalStorageValue(t.c) < t.m then
+setGlobalStorageValue(t.c, getGlobalStorageValue(t.c)+1)
+if getGlobalStorageValue(t.c) == t.m then
+doPlayerSendCancel(cid, "Event is full [" .. getGlobalStorageValue(t.c) .. " players]!")
+else 
+doBroadcastMessage("" .. getPlayerName(cid) .. " has joined to Rush Event! Actually we have: " .. getGlobalStorageValue(t.c) .. " players!", 19)
+end
+setPlayerStorageValue(cid, t.f, 1)
+setPlayerStorageValue(cid, t.h, -1)
+doTeleportThing(cid, t.w)
+doSendMagicEffect(getCreaturePosition(cid), CONST_ME_TELEPORT)
+setPlayerStorageValue(cid, t.g, getGlobalStorageValue(t.g))
+setGlobalStorageValue(t.g, tonumber(getGlobalStorageValue(t.g))+1)
+else
+doPlayerSendCancel(cid, "Event is full [" .. getGlobalStorageValue(t.c) .. " players]!")
+return true
+end
+else
+doPlayerSendCancel(cid, "You must be in protection zone.")
+return true
+end
+else
+doPlayerSendCancel(cid, "You are already registered in this event.")
+return true
+end
+else
+doPlayerSendCancel(cid, "Your level is too low to participate in this event.")
+return true
+end 
+else
+doPlayerSendCancel(cid, "At the moment there are no records for this event.")
+return true
+end
+return true
+end
+]]></talkaction>
+<event type="combat" name="RushCombat" event="script"><![CDATA[
+domodlib('re')
+function onCombat(cid, target)
+if(getGlobalStorageValue(t.a) == 1) then
+if isPlayer(cid) and isPlayer(target) then
+if getPlayerStorageValue(cid, t.f) == 1 and getPlayerStorageValue(target, t.f) == 1 then
+if getPlayerStorageValue(cid, t.f_1) == getPlayerStorageValue(target, t.f_1) then
+return doPlayerSendCancel(cid, "Sorry, you cannot attack your own team.") and false
+end
+end
+end
+end
+return true
+end
+]]></event>
+<event type="attack" name="RushAttack" event="script"><![CDATA[
+domodlib('re')
+function onAttack(cid, target)
+if(getGlobalStorageValue(t.a) == 1) then
+if isPlayer(cid) and isPlayer(target) then
+if getPlayerStorageValue(cid, t.f) == 1 and getPlayerStorageValue(target, t.f) == 1 then
+if getPlayerStorageValue(cid, t.f_1) == getPlayerStorageValue(target, t.f_1) then
+return doPlayerSendCancel(cid, "Sorry, you cannot attack your own team.") and false
+end
+end
+end
+end
+return true
+end
+]]></event>
+<event type="preparedeath" name="RushDead" event="script"><![CDATA[
+domodlib('re')
+function onPrepareDeath(cid, deathList)
+if(not isPlayer(cid)) then
+return true
+end
+if getGlobalStorageValue(t.a) == 1 then
+local strings = {""}
+local j, position, corpse = 1, 1, 0
+for _, pid in ipairs(deathList) do
+if isCreature(pid) == true then
+strings[position] = j == 1 and "" or strings[position] .. ", "
+strings[position] = strings[position] .. getCreatureName(pid) .. ""
+j = j + 1
+else
+strings[position] = j == 1 and "" or strings[position] .. ", "
+strings[position] = strings[position] .."a field item"
+j = j + 1
+end
+end
+for i, str in ipairs(strings) do
+if(str:sub(str:len()) ~= ",") then
+str = str .. "."
+end
+desc = "You recognize "
+desc = desc .. "" .. getCreatureName(cid) .. ". He was killed by " .. str
+end
+if(getPlayerSex(cid) == 1) then
+corpse = doCreateItem(3058, getCreaturePosition(cid))
+else
+corpse = doCreateItem(3065, getCreaturePosition(cid))
+end
+doItemSetAttribute(corpse, "description", desc)
+if((getPlayerStorageValue(cid, t.g) % 2) == 1) then
+setGlobalStorageValue(t.u, getGlobalStorageValue(t.u)+1)
+else
+setGlobalStorageValue(t.l, getGlobalStorageValue(t.l)+1)
+end
+local red = getGlobalStorageValue(t.l)
+local blue = getGlobalStorageValue(t.u)
+if blue < t.v or red < t.v then
+if(isPlayer(cid) == false) then
+return true
+end
+if((getPlayerStorageValue(cid, t.g) % 2) == 1) then
+doTeleportThing(cid, t.d_1)
+doSendMagicEffect(getCreaturePosition(cid), 10)
+doCreatureAddHealth(cid, getCreatureMaxHealth(cid), MAGIC_EFFECT_UNKNOWN, COLOR_UNKNOWN, true)
+doCreatureAddMana(cid, getCreatureMaxMana(cid))
+doPlayerRemoveLethalConditions(cid)
+if getCreatureSkullType(cid) == SKULL_WHITE then
+doCreatureSetSkullType(cid, 0)
+end
+else
+doTeleportThing(cid, t.d_2)
+doSendMagicEffect(getCreaturePosition(cid), 10)
+doCreatureAddHealth(cid, getCreatureMaxHealth(cid), MAGIC_EFFECT_UNKNOWN, COLOR_UNKNOWN, true)
+doCreatureAddMana(cid, getCreatureMaxMana(cid))
+doPlayerRemoveLethalConditions(cid)
+if getCreatureSkullType(cid) == SKULL_WHITE then
+doCreatureSetSkullType(cid, 0)
+end
+end
+end
+if blue >= t.v then
+doBroadcastMessage(t.y, MESSAGE_STATUS_WARNING)
+setGlobalStorageValue(t.h, 1)
+for _, pid in ipairs(getPlayersOnline()) do
+if(getPlayerStorageValue(pid, t.f_1) == 1) then
+doPlayerAddItem(cid, 2160, 30)
+end
+end
+elseif red >= t.v then
+doBroadcastMessage(t.o, MESSAGE_STATUS_WARNING)
+setGlobalStorageValue(t.h, 1)
+for _, pid in ipairs(getPlayersOnline()) do
+if(getPlayerStorageValue(pid, t.f_2) == 1) then
+doPlayerAddItem(cid, 2160, 30)
+end
+end
+end
+if getGlobalStorageValue(t.h) == 1 then
+setGlobalStorageValue(t.a, 0)
+setGlobalStorageValue(t.h, 0)
+setGlobalStorageValue(t.wv, -1)
+setPlayerStorageValue(cid, t.f, -1)
+setPlayerStorageValue(cid, t.g, 0)
+setPlayerStorageValue(cid, t.l, 0)
+setPlayerStorageValue(cid, t.u, 0)
+setPlayerStorageValue(cid, t.f_1, -1)
+setPlayerStorageValue(cid, t.f_2, -1)
+setPlayerStorageValue(cid, t.h, -1)
+doTeleportThing(cid, getTownTemplePosition(getPlayerTown(cid)), true)
+doSendMagicEffect(getCreaturePosition(cid), 10)
+doCreatureAddHealth(cid, getCreatureMaxHealth(cid), MAGIC_EFFECT_UNKNOWN, COLOR_UNKNOWN, true)
+doCreatureAddMana(cid, getCreatureMaxMana(cid))
+doPlayerRemoveLethalConditions(cid)
+for _, pid in ipairs(getPlayersOnline()) do
+if(getPlayerStorageValue(pid, t.f_1) == 1 or getPlayerStorageValue(pid, t.f_2) == 1) then
+setPlayerStorageValue(pid, t.f, -1)
+doTeleportThing(pid, getTownTemplePosition(getPlayerTown(pid)))
+doSendMagicEffect(getCreaturePosition(pid), CONST_ME_TELEPORT)
+setPlayerStorageValue(pid, t.g, 0)
+setPlayerStorageValue(pid, t.l, 0)
+setPlayerStorageValue(pid, t.u, 0)
+setPlayerStorageValue(pid, t.f_1, -1)
+setPlayerStorageValue(pid, t.f_2, -1)
+setPlayerStorageValue(pid, t.h, -1)
+doCreatureAddHealth(pid, getCreatureMaxHealth(pid), MAGIC_EFFECT_UNKNOWN, COLOR_UNKNOWN, true)
+doCreatureAddMana(pid, getCreatureMaxMana(pid))
+doPlayerRemoveLethalConditions(pid)
+end
+end
+return false
+end
+return false
+end
+return true
+end
+]]></event>
+<event type="outfit" name="RushOutfit" event="script"><![CDATA[
+domodlib('re')
+function onOutfit(cid, old, current)
+if(getGlobalStorageValue(t.a) == 1) then
+if getPlayerGroupId(cid) > 3 then
+return true
+end
+if getPlayerStorageValue(cid, t.h) == 0 then
+if getPlayerStorageValue(cid, t.f) > -1 then
+doPlayerSendCancel(cid, "You cannot change your outfit during the event.")
+return false
+end
+end
+end
+return true
+end
+]]></event>
+</mod>

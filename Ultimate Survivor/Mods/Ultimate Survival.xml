@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                ULTIMATE SURVIVAL - Codigo feito por Omega / Pedido por vinnevinne
+					
+                      Informacoes: http://www.xtibia.com/forum/topic/221415-ultimate-survival/
+-->
+ 
+<mod name="Ultimate Survival" version="1.0" author="Omega" enabled="yes">
+<config name="ultimatelib"><![CDATA[
+USurvival = {
+	posi = {x=104, y=210, z=7}, -- parte esquerda superior da arena
+	posf = {x=115, y=221, z=7}, -- parte direita inferior da arena
+	posc = {x=109, y=215, z=7}, -- onde o player entra na arena
+	
+	waves = {
+	[1] = {monsters = {'dragon', 'dragon lord'}, count = 30, reward = {exp = 0, item = 2148, amount = 1, money = 100}},
+	[2] = {monsters = {'dragon lord', 'frost dragon'}, count = 6, reward = {exp = 0, item = 2152, amount = 1, money = 1000}},
+	[3] = {monsters = {'hydra', 'serpent spawn'}, count = 10, reward = {exp = 0, item = 2160, amount = 1, money = 10000}},
+	},
+	exhaust = 1 * 24 * 60 * 60, -- Tempo em segundos ate poder entrar novamente na arena (1 * 24 * 60 * 60 = 1 dia)
+	
+	final_reward = {item = 2160, amount = 100, exp = 10000, money = 100000},
+	
+	storage_ex = 607069,
+	storage_wave = 607089,
+}
+
+function isWalkable(pos)-- by Nord / editado por Omega
+    if getTileThingByPos({x = pos.x, y = pos.y, z = pos.z, stackpos = 0}).itemid == 0 then
+        return false
+    elseif isCreature(getTopCreature(pos).uid) then
+        return false
+    elseif getTileInfo(pos).protection then
+        return false
+    elseif hasProperty(getThingFromPos(pos).uid, 3) or hasProperty(getThingFromPos(pos).uid, 7) then
+        return false
+    end
+return true
+end
+
+function doSpawnMonsters(monsters, pos, radius, limit)
+	if not pos.x or not pos.y or not pos.z or not type(monsters) == 'table' then
+		return false
+	end
+		local radius = tonumber(radius)
+	if radius > 5 then
+		radius = 5
+	elseif radius < 2 then
+		radius = 2
+	end
+	if not limit or limit < 1 then
+		limit = 1
+	elseif limit > radius ^ 2 then
+		limit = math.floor((radius*1.5) ^ 2)
+	end
+	
+	local k = 0
+	local tries = 0
+	repeat
+		for x = pos.x - radius, pos.x + radius do
+			for y = pos.y - radius, pos.y + radius do
+				if isWalkable({x=x, y=y, z=pos.z}) then
+					local monster = monsters[math.random(1, #monsters)]
+					local chance = math.random(1, 100)
+					if k == limit then
+						break
+					elseif chance <= 8 and doCreateMonster(monster, {x=x, y=y, z=pos.z}) then
+						k = k + 1
+					end
+				end
+			end
+		end
+		tries = tries + 1
+	until k >= limit or tries >= 500
+	return k >= limit and true or false
+end
+
+function getPlayersInArea(pos1,pos2)
+	local players = {}
+	if pos1.x and pos1.y and pos2.x and pos2.y and pos1.z == pos2.z then
+		for a = pos1.x, pos2.x do
+			for b = pos1.y,pos2.y do
+				local pos = {x=a,y=b,z=pos1.z}
+				if isPlayer(getTopCreature(pos).uid) then
+					table.insert(players,getTopCreature(pos).uid)
+				end
+			end
+		end
+		return players
+	else
+		return false
+	end
+end	
+
+function getMonstersInArea(pos1,pos2)
+	local players = {}
+	if pos1.x and pos1.y and pos2.x and pos2.y and pos1.z == pos2.z then
+		for a = pos1.x, pos2.x do
+			for b = pos1.y,pos2.y do
+				local pos = {x=a,y=b,z=pos1.z}
+				if isMonster(getTopCreature(pos).uid) then
+					table.insert(players,getTopCreature(pos).uid)
+				end
+			end
+		end
+		return players
+	else
+		return false
+	end
+end
+
+function doCleanArena()
+	local monsters = getMonstersInArea(USurvival.posi, USurvival.posf)
+	for _, cid in pairs(monsters) do
+		doRemoveCreature(cid)
+	end
+end
+
+function doStartWave(waveID, cid)
+	if not isCreature(cid) then return false end
+	if USurvival.waves[waveID] then
+		wave = USurvival.waves[waveID]
+		doSpawnMonsters(wave.monsters, USurvival.posc, 5, wave.count)
+		doPlayerSendTextMessage(cid, 21, 'Wave '..waveID..' has started! FIGHT!')
+	end
+end
+]]></config>
+
+<action actionid="4599" event="script" override="yes"><![CDATA[
+domodlib('ultimatelib')
+function onUse(cid, item)
+	if getPlayerStorageValue(cid, USurvival.storage_ex) <= os.time() then
+		if #getPlayersInArea(USurvival.posi, USurvival.posf) == 0 then
+			doCleanArena()
+			doTeleportThing(cid, USurvival.posc)
+			doPlayerSendTextMessage(cid, 21, 'The Ultimate Survival will Start in 10 seconds! Be ready to face your destiny!')
+			addEvent(doStartWave, 10000, 1, cid)
+			setPlayerStorageValue(cid, USurvival.storage_wave, 1)
+			setPlayerStorageValue(cid, USurvival.storage_ex, os.time() + USurvival.exhaust)
+			if item.itemid % 2 == 1 then
+				doTransformItem(item.uid, item.itemid+1)
+			else
+				doTransformItem(item.uid, item.itemid-1)
+			end
+		else
+			doPlayerSendCancel(cid, 'Someone is already in the arena.')
+			doSendMagicEffect(getThingPos(cid), 2)
+		end
+	else
+		local left = getPlayerStorageValue(cid, USurvival.storage_ex) - os.time()
+		left = {hour = math.floor(left/3600), minutes = math.ceil((left % 3600)/60)}
+		doPlayerSendCancel(cid, 'You have to wait '.. left.hour ..'h and '..left.minutes..'min.')
+		doSendMagicEffect(getThingPos(cid), 2)
+	end
+	return true
+end
+]]></action>
+
+<event type="login" name="US Login" event="script"><![CDATA[
+domodlib('ultimatelib')
+function onLogin(cid)
+	registerCreatureEvent(cid,'UltimateSurvival1')
+	registerCreatureEvent(cid,'UltimateSurvival2')
+	if isInArea(getThingPos(cid), USurvival.posi, USurvival.posf) then
+		doTeleportThing(cid, getTownTemplePosition(getPlayerTown(cid)))
+		doSendMagicEffect(getThingPos(cid), 10)
+	end
+	return true
+end
+]]></event>
+
+<event type="kill" name="UltimateSurvival1" event="script"><![CDATA[
+domodlib('ultimatelib')
+function onKill(cid, target)
+	if isInArea(getThingPos(cid), USurvival.posi, USurvival.posf) then
+		if #getMonstersInArea(USurvival.posi, USurvival.posf) == 1 then
+			local wave = getPlayerStorageValue(cid, USurvival.storage_wave)
+			if USurvival.waves[wave+1] then
+				setPlayerStorageValue(cid, USurvival.storage_wave, wave + 1)
+				addEvent(doStartWave, 5000, wave + 1, cid)
+				doPlayerSendTextMessage(cid, 22, 'Congratulations! Next wave will start in 5 seconds!')
+			else
+				doPlayerSendTextMessage(cid, 22, 'CONGRATULATIONS! YOU HAVE BEATEN THE ULTIMATE SURVIVAL!')
+				local reward = USurvival.final_reward
+				if reward.item then
+					doPlayerAddItem(cid, reward.item, (reward.amount or 1), false)
+				end
+				if reward.exp then
+					doPlayerAddExp(cid, reward.exp)
+				end
+				if reward.money then
+					doPlayerAddMoney(cid, reward.money)
+				end
+				local medal = doPlayerAddItem(cid, 5785, 1, false)
+				if medal then
+					doItemSetAttribute(medal, 'description', 'This was awarded to '..getCreatureName(cid)..' for completing the Ultimate Survival.')
+					doItemSetAttribute(medal,'name', 'Ultimate Survival Medal')
+				end
+				doTeleportThing(cid, getTownTemplePosition(getPlayerTown(cid)))
+			end
+		end
+	end
+	return true
+end
+
+]]></event>
+
+<event type="preparedeath" name="UltimateSurvival2" event="script"><![CDATA[
+domodlib('ultimatelib')
+function onPrepareDeath(cid, killers)
+	if isInArea(getThingPos(cid), USurvival.posi, USurvival.posf) then
+		doCreatureAddHealth(cid, getCreatureMaxHealth(cid), 65535, 256, true)
+		doRemoveConditions(cid, false)
+		doTeleportThing(cid, getTownTemplePosition(getPlayerTown(cid)))
+		doPlayerSendTextMessage(cid, 21, 'Too bad, you couldn\'t defeat the Ultimate Survival... Better luck next time.')
+		local reward = USurvival.waves[getPlayerStorageValue(cid, USurvival.storage_wave)].reward
+		if reward.item then
+			doPlayerAddItem(cid, reward.item, reward.amount or 1)
+		end
+		if reward.exp then
+			doPlayerAddExp(cid, reward.exp)
+		end
+		if reward.money then
+			doPlayerAddMoney(cid, reward.money)
+		end
+		return false
+	end
+	return true
+end
+]]></event>
+
+</mod>

@@ -1,0 +1,3 @@
+<!-- Castle 24Hrs -->
+        <action actionid="9999" event="script" value="castlewar1.lua"/>
+        <action actionid="4538" event="script" value="castledoor1.lua"/>

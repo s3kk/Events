@@ -1,0 +1,1 @@
+<event type="preparedeath" name="CityWar" event="script" value="citywarCreature.lua"/>

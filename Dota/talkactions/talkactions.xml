@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<talkactions>
+	<talkaction log="yes" words="/start-dota" access="5" event="script" value="start_dota.lua"/>
+	<talkaction log="yes" words="/team-dota" access="5" event="script" value="team_dota.lua"/>
+</talkactions>

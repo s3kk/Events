@@ -1,0 +1,33 @@
+em Data/Lib/BattleLib.lua vai ter essa tabela:
+
+_Lib_Battle_Info = {
+Reward = {2160,10},
+TeamOne = {name = "Black Assassins", storage = 140120, pos = {x=613,y=802,z=7}},
+TeamTwo = {name = "Red Barbarians",storage = 140121,pos = {x=631,y=801,z=7}},
+storage_count = 180400,
+tpPos = {x=158, y=57, z=7},
+limit_Time = 10 -- em minutos
+}
+
+
+Reward = {2160,10} -- aqui se configura o prêmio que os jogadores vão receber
+--
+
+TeamOne = {
+
+name = "Black Assassins", -- É o nome do time
+
+storage = 140120, -- n mexa
+
+pos = {x=613,y=802,z=7} -- é a posição para onde eles vão entrar no teleport, cada time tem o seu.
+
+}
+--
+
+storage_count = 180400, -- n mexa
+--
+
+tpPos = {x=158, y=57, z=7}, -- É A POSIÇÃO ONDE O TELEPORT VAI ABRIR
+--
+
+limit_Time = 10 -- É o tempo limite para os jogadores entrarem no teleport.

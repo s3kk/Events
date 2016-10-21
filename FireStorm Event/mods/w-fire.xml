@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mod name="Fire_Storm_Event" version="0.1" author="Absolute Version" contact="lu.lukinha" enabled="yes">
+
+    <config name="config_fire_storm_event">
+        <![CDATA[
+            configFireStormEvent = {
+                storages = {
+                    main = 'fireStormEventMain', -- set free storage
+                    player = 'fireStormEventPlayer', -- set free storage
+                    joining = 'fireStormEventJoining', -- set free storage
+                    exhaust = 'fireStormEventExhaust', -- set free storage
+                    countEvent = 'fireStormEventCountEvent' -- set free storage
+                },
+                
+                position = {x=890 ,y=993,z=7}, -- posiotion to which player is teleporting
+                room = {
+                    from = {x=736,y=933,z=7}, -- left top corner of event room
+                    to = {x=781,y=955,z=7} -- right bottom corner of event room
+                },
+
+                rewards = {8858, 2346, 2538, 2437}, -- reward id which player can win (reward is random)
+                players = {
+                    max = 80,
+                    min = 2,
+                    minLevel = 100
+                },
+
+                days = {
+                    ['Tuesday'] = {'19:59:20'},
+                    ['Thursday'] = {'19:59:20'},
+                    ['Sunday'] = {'19:59:20'}
+                },
+
+                fireStormDelay = 1000, -- milisecond
+                
+                delayTime = 5.0, -- time in which players who joined to event are teleporting to teleport position
+                startEvent = 5 -- time from teleport to start event
+                text = '-PL-\nAby wygrac i otrzymac nagrode, utrzymaj sie jak najdluzej na arenie.\n\n-ENG-\nTo win and get a Rewards, to stay as long as possible in the arena.'
+            }
+
+            y, x = 1, 1 -- don't change it
+        ]]>
+    </config>
+    
+    <lib name="lib_fire_storm_event">
+        <![CDATA[
+            function doStartFireStormEvent()
+                doSetStorage(configFireStormEvent.storages.joining, -1)
+                
+                if configFireStormEvent.players.min <= doCountPlayersFireStormEvent() then        
+                    for _, cid in ipairs(getPlayersOnline()) do
+                        if getCreatureStorage(cid, configFireStormEvent.storages.player) > 0 then
+                            doCreatureSetNoMove(cid, false)
+                            doRemoveCondition(cid, CONDITION_INFIGHT)
+                            doTeleportThing(cid, configFireStormEvent.position)
+                            doCreatureSetStorage(cid, configFireStormEvent.storages.player, -1)
+                            
+                            doPlayerSendTextMessage(cid, MESSAGE_EVENT_ADVANCE, 'Get ready. Fire Storm Event start in '..configFireStormEvent.startEvent..' seconds.')
+                        end
+                    end
+                    
+                    addEvent(doSetStorage, configFireStormEvent.startEvent * 1000, configFireStormEvent.storages.main, 1)
+                    addEvent(doRepeatCheckFireStorm, configFireStormEvent.startEvent * 1000 + 2000)
+                    
+                    doBroadcastMessage('Fire Storm Event has started. LET\'S GO!')
+                else
+                    for _, cid in ipairs(getPlayersOnline()) do
+                        if getCreatureStorage(cid, configFireStormEvent.storages.player) > 0 then
+                            doCreatureSetNoMove(cid, false)
+                            doRemoveCondition(cid, CONDITION_INFIGHT)
+                        end
+                    end
+                    
+                    doBroadcastMessage('Fire Storm hasn\'t started beacuse there were not enough players.')
+                end
+            end
+            
+            function doRepeatCheckFireStorm()
+                if getStorage(configFireStormEvent.storages.main) > 0 then
+                    local xTable, yTable, playerTable = {}, {}, {}
+
+                    for x = configFireStormEvent.room.from.x, configFireStormEvent.room.to.x do
+                        for y = configFireStormEvent.room.from.y, configFireStormEvent.room.to.y do
+                            table.insert(xTable, x)
+                            table.insert(yTable, y)
+
+                            local n, i = getTileInfo({x=x, y=y, z=configFireStormEvent.room.to.z}).creatures, 1
+                            if n ~= 0 then
+                                local v = getThingfromPos({x=x, y=y, z=configFireStormEvent.room.to.z, stackpos=i}).uid
+                                while v ~= 0 do
+                                    if isPlayer(v) then
+                                        table.insert(playerTable, v)
+                                        if n == #playerTable then
+                                            break
+                                        end
+                                    end
+                                    i = i + 1
+                                    v = getThingfromPos({x=x, y=y, z=configFireStormEvent.room.to.z, stackpos=i}).uid
+                                end
+                            end
+                        end
+                    end
+
+                    if #playerTable == 1 then
+                        local prize = math.random(#configFireStormEvent.rewards)
+                        doCreatureAddHealth(playerTable[1], getCreatureMaxHealth(playerTable[1]) - getCreatureHealth(playerTable[1]))
+                        doCreatureAddMana(playerTable[1], getCreatureMaxMana(playerTable[1]) - getCreatureMana(playerTable[1]))
+                        doTeleportThing(playerTable[1], getTownTemplePosition(getPlayerTown(playerTable[1])), true)
+                        doPlayerAddItem(playerTable[1], configFireStormEvent.rewards[prize], 1)
+                        doPlayerSendTextMessage(playerTable[1], MESSAGE_EVENT_ADVANCE, 'You win! You have received ' .. getItemNameById(configFireStormEvent.rewards[prize]) .. ' as reward.')
+                        doBroadcastMessage('Fire Storm Event has finished. The winner is ' .. getCreatureName(playerTable[1]) .. '. Congratulations.')
+                        doSetStorage(configFireStormEvent.storages.main, -1)
+                        
+                        db.query("INSERT INTO `events` (`event_name`, `winner_name`, `won_item`, `time_win`) VALUES (\"Fire\", \"" .. getCreatureName(playerTable[1]) .. "\", \"" .. getItemNameById(configFireStormEvent.rewards[prize]) .. "\", " .. getStorage(configFireStormEvent.storages.countEvent) ..");")
+                        doSetStorage(configFireStormEvent.storages.countEvent, getStorage(configFireStormEvent.storages.countEvent) + 1)
+                        
+                        x, y = 1, 1
+                    elseif #playerTable > 1 then
+                        for a = 1, y do
+                            addEvent(
+                                function()
+                                    local pos = {x=xTable[math.random(#xTable)], y=yTable[math.random(#yTable)], z=7}
+
+                                    for _, player in ipairs(playerTable) do
+                                        local pPos = getThingPos(player)
+                                        if pPos.x == pos.x and pPos.y == pos.y and pPos.z == pos.z then
+                                            doCreatureAddHealth(player, - getCreatureMaxHealth(player))
+                                        end
+                                    end
+                                    doSendDistanceShoot({x = pos.x - math.random(4, 6), y = pos.y - 5, z = pos.z}, pos, CONST_ANI_FIRE)
+
+                                    addEvent(doSendMagicEffect, 150, pos, CONST_ME_HITBYFIRE)
+                                    addEvent(doSendMagicEffect, 150, pos, CONST_ME_FIREAREA)
+                                end,
+                                math.random(100,1000)
+                            )
+                        end
+                        if x == 5 * y then
+                            y = y + 1
+                        end
+                        
+                        x = x + 1
+                    else
+                        doBroadcastMessage('No one have won in Fire Storm Event.')
+                        doSetStorage(configFireStormEvent.storages.main, -1)                        
+                        doSetStorage(configFireStormEvent.storages.countEvent, getStorage(configFireStormEvent.storages.countEvent) + 1)
+                        x, y = 1, 1
+                    end
+                    
+                    addEvent(doRepeatCheckFireStorm, configFireStormEvent.fireStormDelay)
+                end
+            end
+            
+            function doCountPlayersFireStormEvent()
+                local x = 0
+                for _, cid in ipairs(getPlayersOnline()) do
+                    if getCreatureStorage(cid, configFireStormEvent.storages.player) > 0 then
+                        x = x + 1
+                    end
+                end
+                return x
+            end
+            
+            function doStartCountingFireStormEvent(x)
+                if configFireStormEvent.delayTime-x > 0 then
+                    doBroadcastMessage('Fire Storm Event will start in '..configFireStormEvent.delayTime-x..' minutes. You can join to the event by say "!fire join".')
+                    addEvent(doStartCountingFireStormEvent, 60*1000, x+1)
+                end
+            end
+        ]]>
+    </lib>
+
+    <talkaction words="!fire" event="script">
+        <![CDATA[
+            domodlib("config_fire_storm_event")
+
+            function onSay(cid, words, param)
+                if getStorage(configFireStormEvent.storages.joining) ~= 1 then
+                    return doPlayerSendCancel(cid, 'Fire Storm Event hasn\'t started yet.')
+                elseif param == '' then
+                    return doPlayerSendCancel(cid, 'Command param required (say: "!fire join" or "!fire leave.").')
+                elseif getPlayerLevel(cid) < configFireStormEvent.players.minLevel then
+                    return doPlayerSendCancel(cid, 'You can\'t join to the event if you don\'t have a require '..configFireStormEvent.players.minLevel..' level.')
+                elseif getTileInfo(getThingPos(cid)).protection ~= true then
+                    return doPlayerSendCancel(cid, 'You can\'t join to the event if you aren\'t in protection zone.')
+                elseif exhaustion.check(cid, configFireStormEvent.storages.exhaust) ~= false then
+                    return doPlayerSendCancel(cid, 'You must wait '..exhaustion.get(cid, configFireStormEvent.storages.exhaust)..' seconds to use this command again.')
+                end
+
+                if param == 'join' then
+                    if getCreatureStorage(cid, configFireStormEvent.storages.player) > 0 then
+                        return doPlayerSendCancel(cid, 'You have arleady joined to event. Wait patiently for start.')
+                    elseif doCountPlayersFireStormEvent() == configFireStormEvent.players.max then
+                        return doPlayerSendCancel(cid, 'Max players in the event have been reached.')
+                    end
+                    
+                    doCreatureSetNoMove(cid, true)
+                    doPlayerPopupFYI(cid, configFireStormEvent.text)
+                    doCreatureSetStorage(cid, configFireStormEvent.storages.player, 1)
+                    doAddCondition(cid, createConditionObject(CONDITION_INFIGHT, -1))
+                    doPlayerSendTextMessage(cid, MESSAGE_EVENT_ADVANCE, 'You have joined to Fire Storm Event. You can\'t move until event don\'t start. Wait patiently for the event start.')
+                    doPlayerSendTextMessage(cid, MESSAGE_EVENT_ORANGE, 'You have joined to Fire Storm Event.')
+                elseif param == 'leave' then
+                    if getCreatureStorage(cid, configFireStormEvent.storages.player) <= 0 then
+                        return doPlayerSendCancel(cid, 'You can\'t leave from the event if you don\'t join.')
+                    end
+                    
+                    doCreatureSetNoMove(cid, false)
+                    doRemoveCondition(cid, CONDITION_INFIGHT)
+                    doCreatureSetStorage(cid, configFireStormEvent.storages.player, -1)
+                    doPlayerSendTextMessage(cid, MESSAGE_EVENT_ORANGE, 'You have left from the Fire Storm Event.')
+                end
+                
+                exhaustion.set(cid, configFireStormEvent.storages.exhaust, 5)
+                
+                return true
+            end
+        ]]>
+    </talkaction>
+    
+    <talkaction words="!startfire" access="4" event="script">
+        <![CDATA[
+            domodlib("config_fire_storm_event")
+            domodlib("lib_fire_storm_event")
+
+            function onSay(cid, words, param)
+                if getStorage(configFireStormEvent.storages.main) > 0 then
+                    return doPlayerSendCancel(cid, 'Fire Storm Event is already running.')
+                end
+            
+                doStartCountingFireStormEvent(0)
+                
+                for _, pid in ipairs(getPlayersOnline()) do
+                    if getCreatureStorage(pid, configFireStormEvent.storages.player) > 0 then
+                        doCreatureSetStorage(pid, configFireStormEvent.storages.player, -1)
+                        doTeleportThing(pid, getTownTemplePosition(getPlayerTown(pid)), true)
+                    end
+                end
+                
+                doSetStorage(configFireStormEvent.storages.joining, 1)
+                addEvent(doStartFireStormEvent, configFireStormEvent.delayTime * 60 * 1000)
+                return true
+            end
+        ]]>
+    </talkaction>
+
+    <globalevent name="Fire_Storm_Event_Days" interval="1000" event="script">
+        <![CDATA[
+            domodlib("config_fire_storm_event")
+            domodlib("lib_fire_storm_event")
+
+            local daysOpen = {}            
+            for k, v in pairs(configFireStormEvent.days) do
+                table.insert(daysOpen, k)
+            end
+            
+            function onThink(interval)
+                if isInArray(daysOpen, os.date('%A')) then
+                    if isInArray(configFireStormEvent.days[os.date('%A')], os.date('%X', os.time())) then
+                        if getStorage(configFireStormEvent.storages.joining) ~= 1 then
+                            doStartCountingFireStormEvent(0)
+                            
+                            for _, pid in ipairs(getPlayersOnline()) do
+                                if getCreatureStorage(pid, configFireStormEvent.storages.player) > 0 then
+                                    doCreatureSetStorage(pid, configFireStormEvent.storages.player, -1)
+                                    doTeleportThing(pid, getTownTemplePosition(getPlayerTown(pid)), true)
+                                end
+                            end
+                            
+                            doSetStorage(configFireStormEvent.storages.joining, 1)
+                            addEvent(doStartFireStormEvent, configFireStormEvent.delayTime * 60 * 1000)
+                        end
+                    end
+                end
+                return true
+            end
+        ]]>
+    </globalevent>
+
+    <event type="statschange" name="Fire_Storm_Event_Dead" event="script">
+        <![CDATA[
+            domodlib("config_fire_storm_event")
+
+            function onStatsChange(cid, attacker, type, combat, value)
+                if type == 1 and getCreatureHealth(cid) <= value then
+                    if isInRange(getThingPos(cid), configFireStormEvent.room.from, configFireStormEvent.room.to) then
+                        doCreatureAddHealth(cid, getCreatureMaxHealth(cid) - getCreatureHealth(cid))
+                        doCreatureAddMana(cid, getCreatureMaxMana(cid) - getCreatureMana(cid))
+                        doTeleportThing(cid, getTownTemplePosition(getPlayerTown(cid)))
+                        doPlayerSendTextMessage(cid, MESSAGE_EVENT_ORANGE, 'You loss.')
+                        return false
+                    end
+                end
+                return true
+            end
+        ]]>
+    </event>
+    
+    <event type="login" name="Fire_Storm_Event_Login" event="script">
+        <![CDATA[
+            domodlib("config_fire_storm_event")
+        
+            function onLogin(cid)
+                if getCreatureStorage(cid, configFireStormEvent.storages.player) > 0 then
+                    doCreatureSetStorage(cid, configFireStormEvent.storages.player, -1)
+                    doTeleportThing(cid, getTownTemplePosition(getPlayerTown(cid)), true)
+                    doCreatureSetNoMove(cid, false)
+                    doRemoveCondition(cid, CONDITION_INFIGHT)
+                end
+
+                registerCreatureEvent(cid, 'Fire_Storm_Event_Dead')
+                return true
+            end
+        ]]>
+    </event>
+    
+    <globalevent name="Fire_Storm_Event_Start" type="startup" event="script">
+        <![CDATA[
+            domodlib("config_fire_storm_event")
+
+            function onStartup()
+                doSetStorage(configFireStormEvent.storages.main, -1)
+                doSetStorage(configFireStormEvent.storages.joining, -1)
+                return true
+            end
+        ]]>
+    </globalevent>
+</mod>

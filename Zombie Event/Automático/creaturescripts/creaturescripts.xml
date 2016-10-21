@@ -1,0 +1,2 @@
+<!-- ZOMBIE EVENT -->    
+<event type="statschange" name="zombieevent" event="script" value="zombieevent.lua"/>

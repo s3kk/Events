@@ -1,0 +1,26 @@
+position = {x=890 ,y=993,z=7}, -- posiotion to which player is teleporting - Aqui você deve colocar o centro da posição do mapa que o linduxo do meu querido amigo e parceiro vosso disponibiliza AQUI
+
+from = {x=736,y=933,z=7}, -- left top corner of event room - Aqui você deve colocar a posição superior esquerda da área do evento, como exemplo na imagem:
+
+to = {x=781,y=955,z=7} -- right bottom corner of event room - Aqui você deve colocar a posição inferior direita da área do evento, como exemplo na imagem:
+
+Configurar prêmio:
+rewards = {8858, 2346, 2538, 2437}, -- reward id which player can win (reward is random) - onde está os números de exemplo 8858, 2346, 2538, 2437 são os IDS dos items que você colocará como premiação, o player ganhará apenas UM item que pode ser um dos 4 (sorteio).
+Caso você queira colocar apenas 1 item específico altere para:
+rewards = {8858}, -- reward id which player can win (reward is random)
+ 
+ 
+Permissão para abrir o evento:
+<talkaction words="!startfire" access="4" event="script"> - em acess="4" você poderá alterar o membro da staff que poderá abrir, o número 4 indica que CM e ADMS poderão abrir, caso troque para 3, GM'S, CM'S E ADM'S poderão executar o comando !startfire para abrir o evento quando quiser.
+ 
+ 
+Configuração automática:
+    days = {
+                    ['Tuesday'] = {'19:59:20'},
+                    ['Thursday'] = {'19:59:20'},
+                    ['Sunday'] = {'19:59:20'}
+ 
+Simples, os dias são colocados em inglês, então basta ajustar, por exemplo, você quer que o evento ocorra na segunda-feira ás 19:00, segue um exemplo:
+   ['Monday'] = {'19:00:00'},
+ 
+Lembrando que o dia e horário deve corresponder com o horário atual da máquina onde roda o servidor.

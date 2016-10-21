@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<creaturescripts>
+	<event type="death" name="ga1" event="script" value="ga1.lua"/>
+	<event type="death" name="ga2" event="script" value="ga2.lua"/>
+    <event type="death" name="ga3" event="script" value="ga3.lua"/>
+    <event type="death" name="gv1" event="script" value="gv1.lua"/>
+    <event type="death" name="gv2" event="script" value="gv2.lua"/>
+	<event type="death" name="gv3" event="script" value="gv3.lua"/>
+</creaturescripts>

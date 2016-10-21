@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spawns>
+  <spawn centerx="1068" centery="1057" centerz="7" radius="1">
+    <monster name="Vip Trainer" x="-1" y="-1" z="7" spawntime="60"/>
+    <monster name="Vip Trainer" x="1" y="-1" z="7" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1088" centery="1057" centerz="7" radius="1">
+    <monster name="Vip Trainer" x="-1" y="-1" z="7" spawntime="60"/>
+    <monster name="Vip Trainer" x="1" y="-1" z="7" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1078" centery="1060" centerz="7" radius="6">
+    <monster name="Vip Trainer" x="-6" y="-2" z="7" spawntime="60"/>
+    <monster name="Vip Trainer" x="-4" y="-2" z="7" spawntime="60"/>
+    <monster name="Vip Trainer" x="4" y="-2" z="7" spawntime="60"/>
+    <monster name="Vip Trainer" x="6" y="-2" z="7" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1086" centery="1063" centerz="7" radius="1">
+    <monster name="Vip Trainer" x="-1" y="1" z="7" spawntime="60"/>
+    <monster name="Vip Trainer" x="1" y="1" z="7" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1075" centery="1067" centerz="7" radius="7">
+    <monster name="Dragon Lord Vip3" x="-6" y="0" z="7" spawntime="60"/>
+    <monster name="Frost Dragon vip3" x="-6" y="2" z="7" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1084" centery="1068" centerz="7" radius="7">
+    <monster name="Grim Reaper Vip II" x="3" y="-1" z="7" spawntime="60"/>
+    <monster name="Lord of Demon vip3" x="3" y="1" z="7" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1068" centery="1078" centerz="7" radius="1">
+    <monster name="Vip Trainer" x="-1" y="-1" z="7" spawntime="60"/>
+    <monster name="Vip Trainer" x="1" y="-1" z="7" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1088" centery="1078" centerz="7" radius="1">
+    <monster name="Vip Trainer" x="-1" y="-1" z="7" spawntime="60"/>
+    <monster name="Vip Trainer" x="1" y="-1" z="7" spawntime="60"/>
+    <monster name="Vip Trainer" x="0" y="0" z="7" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1074" centery="1041" centerz="8" radius="5">
+    <monster name="Protect Castle" x="-5" y="0" z="8" spawntime="60"/>
+    <monster name="Protect Statue" x="-5" y="3" z="8" spawntime="60"/>
+    <monster name="Protect Statue" x="0" y="4" z="8" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1084" centery="1042" centerz="8" radius="5">
+    <monster name="Protect Castle" x="1" y="-5" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="1" y="-4" z="8" spawntime="60"/>
+    <monster name="Protect Statue" x="-1" y="-3" z="8" spawntime="60"/>
+    <monster name="Protect Statue" x="-4" y="-2" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="0" y="1" z="8" spawntime="60"/>
+    <monster name="Protect Statue" x="-4" y="2" z="8" spawntime="60"/>
+    <monster name="Protect Statue" x="0" y="3" z="8" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1077" centery="1053" centerz="8" radius="5">
+    <monster name="Protect Statue" x="-3" y="-4" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="3" y="-4" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="-5" y="1" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="4" y="1" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="-5" y="2" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="4" y="2" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="0" y="3" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="0" y="4" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="0" y="5" z="8" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1077" centery="1066" centerz="8" radius="5">
+    <monster name="Protect Statue" x="0" y="0" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="-5" y="2" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="5" y="2" z="8" spawntime="60"/>
+    <monster name="Protect Statue" x="-1" y="4" z="8" spawntime="60"/>
+    <monster name="Protect Statue" x="1" y="4" z="8" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1075" centery="1077" centerz="8" radius="5">
+    <monster name="Protect Statue" x="2" y="-5" z="8" spawntime="60"/>
+    <monster name="Protect Statue" x="-5" y="-4" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="4" y="-2" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="5" y="-2" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="-1" y="-1" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="0" y="-1" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="-1" y="1" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="0" y="1" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="4" y="1" z="8" spawntime="60"/>
+    <monster name="Protect Castle" x="5" y="1" z="8" spawntime="60"/>
+    <monster name="Protect Statue" x="-4" y="2" z="8" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1081" centery="1078" centerz="8" radius="5">
+    <monster name="Protect Castle" x="0" y="-3" z="8" spawntime="60"/>
+    <monster name="Protect Statue" x="2" y="-3" z="8" spawntime="60"/>
+    <monster name="Protect Statue" x="2" y="5" z="8" spawntime="60"/>
+  </spawn>
+  <spawn centerx="1077" centery="1084" centerz="8" radius="5">
+    <monster name="Protect Statue" x="-3" y="-1" z="8" spawntime="60"/>
+    <monster name="Castle" x="0" y="2" z="8" spawntime="60"/>
+    <monster name="Castle" x="1" y="2" z="8" spawntime="60"/>
+  </spawn>
+</spawns>

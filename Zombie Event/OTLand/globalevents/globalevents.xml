@@ -1,0 +1,2 @@
+<globalevent name="ZombieGlobalThink" interval="5000" event="script" value="zombie/onthink.lua"/>
+<globalevent name="ZombieGlobalStartup" type="start" event="script" value="zombie/onstartup.lua"/>
