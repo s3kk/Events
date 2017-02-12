@@ -1303,7 +1303,7 @@ function onThink(interval)
 
 						else
 
-							doSendAnimatedText(pl,"FLAG!",COLOR_RED)
+							doSendAnimatedText(pl,"FLAG!",TEXTCOLOR_RED)
 
 							doSendMagicEffect(pl, CONST_ME_SOUND_RED)
 
