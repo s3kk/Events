@@ -1,2 +1,1 @@
-<!-- ZombieEvent -->
-<monster name="event zombie" file="Zombie event.xml"/>
+<monster name="Zombie Event" file="zombie_event.xml"/>

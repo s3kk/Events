@@ -1,1 +1,0 @@
-registerCreatureEvent(cid, "zombieevent")

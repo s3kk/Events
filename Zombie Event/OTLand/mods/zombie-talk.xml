@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<mod name="Zombie" version="1.0" author="Sekk and PhoOwned" enabled="yes">
+<mod name="Zombie-Talk" version="1.0" author="Sekk and PhoOwned" enabled="no">
 
 <lib name="Z-lib"><![CDATA[
 -- CONFIG
@@ -164,6 +164,7 @@ function loseOnZombieArena(cid)
 			doPlayerSendTextMessage(winner, MESSAGE_STATUS_CONSOLE_BLUE, "Voce ganhou o Zombie Event.")
 			doBroadcastMessage("Depois de " .. os.time() - getPlayerZombiesEventStatus(winner) .. " segundos, o jogador " .. getCreatureName(winner) .. " ganhou o Zombie Arena Event com " .. getStorage(ZE_ZOMBIES_SPAWNED) .. " zumbis!")
 			kickPlayerFromZombiesArea(winner)
+			doSendMagicEffect(getPlayerPosition(winner), CONST_ME_MAGIC_BLUE)
 		else
 			doBroadcastMessage("O evento acabou, infelizmente ninguem ganhou!")
 		end

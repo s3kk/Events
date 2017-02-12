@@ -1,6 +1,6 @@
 local config = {    playerCount = 2001, -- Storage do players do evento
     maxPlayers = 20, -- Maximo de players pra partiparem do evento
-    minLevel = 17 -- Level minimo pra entrar no evento
+    minLevel = 1 -- Level minimo pra entrar no evento
     }
     
 function onStepIn(cid, item, position, lastPosition, fromPosition, toPosition, actor)

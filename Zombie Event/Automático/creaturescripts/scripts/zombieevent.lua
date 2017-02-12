@@ -2,12 +2,12 @@ local config = {
     playerCount = 2001, -- Storage dos players que entram e sai do evento
     
     goblet = 5805, -- Troféu que vai pro vencedor do evento
-    rewards = {2195, 2152, 2160}, -- Recompensas.       
-    moneyReward = {2160, 10, 1}, -- {moneyId, quantidade, usar}1 pra usar 0 pra não usar}
+    rewards = {7440}, -- Recompensas.       
+    moneyReward = {9771, 10, 1}, -- {moneyId, quantidade, usar}1 pra usar 0 pra não usar}
     
     -- Area que o zumbi vai spawnar
-    fromPosition = {x = 543, y = 578, z = 7}, -- top de fromPosition até
-    toPosition = {x = 577, y = 600, z = 7} -- em baixo toPostion
+    fromPosition = {x = 9896, y = 10074, z = 7}, -- top de fromPosition até
+    toPosition = {x = 9970, y = 10142, z = 7} -- em baixo toPostion
     }
 
 
@@ -34,6 +34,7 @@ function onStatsChange(cid, attacker, type, combat, value)
                     doSendMagicEffect(getPlayerPosition(cid), CONST_ME_TELEPORT)
                     for _,items in ipairs(config.rewards) do
                         doPlayerAddItem(cid, items, 1)
+						doPlayerAddItem(cid, 8306, 4)
                     end
                     if config.moneyReward[3] == 1 then
                         doPlayerAddItem(cid, config.moneyReward[1], config.moneyReward[2])
