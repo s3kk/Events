@@ -1,3 +1,0 @@
-<globalevent name="CTFCheck" time="21:00" event="script" value="CTFMax.lua"/>
-<globalevent name="ctfverde" interval="0" script="ctfverde.lua" />
-<globalevent name="ctfvermelho" interval="0" script="ctfvermelho.lua" />

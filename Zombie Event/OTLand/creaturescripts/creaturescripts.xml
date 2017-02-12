@@ -1,3 +1,0 @@
-<event type="think" name="ZombieThink" event="script" value="zombie/onthink.lua"/>
-<event type="statschange" name="ZombieAttack" event="script" value="zombie/onattack.lua"/>
-<event type="death" name="ZombieDeath" event="script" value="zombie/ondeath.lua"/>

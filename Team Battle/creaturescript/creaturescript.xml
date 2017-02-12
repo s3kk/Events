@@ -1,3 +1,0 @@
-<event type="login" name="BattleLogin" event="script" value="BattleCreatureScript.lua"/>
-<event type="PrepareDeath" name="BattleDeath" event="script" value="BattleCreatureScript.lua"/>
-<event type="combat" name="BattleTeam" event="script" value="BattleCreatureScript.lua"/>

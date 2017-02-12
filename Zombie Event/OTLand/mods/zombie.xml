@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mod name="Zombie" version="1.0" author="Sekk and PhoOwned" enabled="yes">
+
+<lib name="Z-lib"><![CDATA[
+-- CONFIG
+ZE_DEFAULT_NUMBER_OF_PLAYERS = 5
+ZE_ACCESS_TO_IGNORE_ARENA = 3
+-- POSITIONS
+ZE_blockEnterItemPosition = {x= 10156, y=10052, z=5}
+ZE_enterPosition = {x = 9930, y = 10105, z = 7}
+ZE_kickPosition = {x=10157, y=10053, z=7}
+ZE_spawnFromPosition = {x = 9896, y = 10074, z = 7}
+ZE_spawnToPosition = {x = 9970, y = 10142, z = 7}
+-- ITEM IDS
+ZE_blockEnterItemID = 1590
+-- STORAGES
+-- - player
+ZE_isOnZombieArea = 34370
+-- - global
+ZE_STATUS = 34370 -- =< 0 - off, 1 - waiting for players, 2 - is running
+ZE_PLAYERS_NUMBER = 34371
+ZE_ZOMBIES_TO_SPAWN = 34372
+ZE_ZOMBIES_SPAWNED = 34373
+
+-- FUNCTION
+
+function setZombiesEventPlayersLimit(value)
+doSetStorage(ZE_PLAYERS_NUMBER, value)
+end
+
+function getZombiesEventPlayersLimit()
+return getStorage(ZE_PLAYERS_NUMBER)
+end
+
+function addPlayerToZombiesArea(cid)
+doSendMagicEffect(getThingPosition(cid), CONST_ME_TELEPORT)
+doTeleportThing(cid, ZE_enterPosition, true)
+doSendMagicEffect(getThingPosition(cid), CONST_ME_TELEPORT)
+if(getPlayerAccess(cid) < ZE_ACCESS_TO_IGNORE_ARENA) then
+setPlayerZombiesEventStatus(cid, os.time())
+end
+end
+
+function kickPlayerFromZombiesArea(cid)
+doSendMagicEffect(getThingPosition(cid), CONST_ME_TELEPORT)
+doTeleportThing(cid, ZE_kickPosition, true)
+doSendMagicEffect(getThingPosition(cid), CONST_ME_TELEPORT)
+setPlayerZombiesEventStatus(cid, 0)
+end
+
+function getPlayerZombiesEventStatus(cid)
+return getCreatureStorage(cid, ZE_isOnZombieArea)
+end
+
+function setPlayerZombiesEventStatus(cid, value)
+doCreatureSetStorage(cid, ZE_isOnZombieArea, value)
+end
+
+function getZombiesEventPlayers()
+local players = {}
+for i, cid in pairs(getPlayersOnline()) do
+if(getPlayerZombiesEventStatus(cid) > 0) then
+table.insert(players, cid)
+end
+end
+return players
+end
+
+function getZombiesCount()
+return getStorage(ZE_ZOMBIES_SPAWNED)
+end
+
+function addZombiesCount()
+doSetStorage(ZE_ZOMBIES_SPAWNED, getStorage(ZE_ZOMBIES_SPAWNED)+1)
+end
+
+function resetZombiesCount()
+doSetStorage(ZE_ZOMBIES_SPAWNED, 0)
+end
+
+function getZombiesToSpawnCount()
+return getStorage(ZE_ZOMBIES_TO_SPAWN)
+end
+
+function setZombiesToSpawnCount(count)
+doSetStorage(ZE_ZOMBIES_TO_SPAWN, count)
+end
+
+function addZombiesEventBlockEnterPosition()
+if(getTileItemById(ZE_blockEnterItemPosition, ZE_blockEnterItemID).uid == 0) then
+doCreateItem(ZE_blockEnterItemID, 1, ZE_blockEnterItemPosition)
+end
+end
+
+function removeZombiesEventBlockEnterPosition()
+local item = getTileItemById(ZE_blockEnterItemPosition, ZE_blockEnterItemID)
+if(item.uid ~= 0) then
+doRemoveItem(item.uid)
+end
+end
+
+function spawnNewZombie()
+    local posx = {}
+    local posy = {}
+    local posz = {}
+    local pir = {}
+    for i=1, 5 do
+        local posx_tmp = math.random(ZE_spawnFromPosition.x ,ZE_spawnToPosition.x)
+        local posy_tmp = math.random(ZE_spawnFromPosition.y ,ZE_spawnToPosition.y)
+        local posz_tmp = math.random(ZE_spawnFromPosition.z ,ZE_spawnToPosition.z)
+        local pir_tmp = 0
+        local spec = getSpectators({x=posx_tmp, y=posy_tmp, z=posz_tmp}, 3, 3, false)
+        if(spec and #spec > 0) then
+            for z, pid in pairs(spec) do
+                if(isPlayer(pid)) then
+                    pir_tmp = pir_tmp + 1
+                end
+            end
+        end
+        posx[i] = posx_tmp
+        posy[i] = posy_tmp
+        posz[i] = posz_tmp
+        pir[i] = pir_tmp
+    end
+    local lowest_i = 1
+    for i=2, 5 do
+        if(pir[i] < pir[lowest_i]) then
+            lowest_i = i
+        end
+    end
+    local ret = (type(doCreateMonster("Zombie Event", {x=posx[lowest_i], y=posy[lowest_i], z=posz[lowest_i]}, false, false, false)) == 'number')
+    if(ret) then
+        addZombiesCount()
+    end
+    return ret
+end
+]]></lib>
+<event type="login" name="Zombie Login" event="script"><![CDATA[
+domodlib('Z-lib')
+
+function onLogin(cid)
+
+registerCreatureEvent(cid, "ZombieAttack")
+
+return true
+end
+]]></event>
+<event type="statschange" name="ZombieAttack" event="script"><![CDATA[
+domodlib('Z-lib')
+
+function loseOnZombieArena(cid)
+	kickPlayerFromZombiesArea(cid)
+	doPlayerSendTextMessage(cid, MESSAGE_STATUS_CONSOLE_BLUE, "Voce perdeu.")
+	local players = getZombiesEventPlayers()
+	if(#players <= 1) then
+		local winner = players[1]
+		if(winner) then
+			doPlayerAddItem(winner, 7440, 1, true)
+			doPlayerAddItem(winner, 9971, 10, true)
+			doPlayerAddItem(winner, 8306, 4, true)
+			local goblet = doPlayerAddItem(winner, 5805, true)
+			doItemSetAttribute(goblet, "description", "Awarded to " .. getPlayerName(cid) .. " for winning the Zombie event.")
+			doPlayerSendTextMessage(winner, MESSAGE_STATUS_CONSOLE_BLUE, "Voce ganhou o Zombie Event.")
+			doBroadcastMessage("Depois de " .. os.time() - getPlayerZombiesEventStatus(winner) .. " segundos, o jogador " .. getCreatureName(winner) .. " ganhou o Zombie Arena Event com " .. getStorage(ZE_ZOMBIES_SPAWNED) .. " zumbis!")
+			kickPlayerFromZombiesArea(winner)
+		else
+			doBroadcastMessage("O evento acabou, infelizmente ninguem ganhou!")
+		end
+		doSetStorage(ZE_STATUS, 0)
+		doSetStorage(ZE_PLAYERS_NUMBER, ZE_DEFAULT_NUMBER_OF_PLAYERS)
+		doSetStorage(ZE_ZOMBIES_TO_SPAWN, 0)
+		doSetStorage(ZE_ZOMBIES_SPAWNED, 0)
+		local width = (math.max(ZE_spawnFromPosition.x, ZE_spawnToPosition.x) - math.min(ZE_spawnFromPosition.x, ZE_spawnToPosition.x)) / 2 + 1
+		local height = (math.max(ZE_spawnFromPosition.y, ZE_spawnToPosition.y) - math.min(ZE_spawnFromPosition.y, ZE_spawnToPosition.y)) / 2 + 1
+		local centerPos = {x=math.min(ZE_spawnFromPosition.x, ZE_spawnToPosition.x)+width,y=math.min(ZE_spawnFromPosition.y, ZE_spawnToPosition.y)+height,z=ZE_spawnFromPosition.z}
+		for z = math.min(ZE_spawnFromPosition.z, ZE_spawnToPosition.z), math.max(ZE_spawnFromPosition.z, ZE_spawnToPosition.z) do
+			centerPos.z = z
+			for i, uid in pairs(getSpectators(centerPos, width, height, false)) do
+				if(isMonster(uid)) then
+					doRemoveCreature(uid)
+				end
+			end
+		end
+	end
+end
+function onStatsChange(target, cid, changetype, combat, value)
+	if((cid and isMonster(cid) and getCreatureName(cid) == "Zombie Event") or (isInRange(getThingPos(target), ZE_spawnFromPosition, ZE_spawnToPosition) and changetype == STATSCHANGE_HEALTHLOSS and math.abs(value) >= getCreatureHealth(target))) then
+		doCreatureAddHealth(target, getCreatureMaxHealth(target))
+		loseOnZombieArena(target)
+		return false
+	end
+	return true
+end
+]]></event>
+<event type="think" name="ZombieThink" event="script"><![CDATA[
+domodlib('Z-lib')
+
+function onThink(cid)
+local target = getCreatureTarget(cid)
+if(target ~= 0 and not isPlayer(target)) then
+doRemoveCreature(target)
+end
+return true
+end
+]]></event>
+<event type="death" name="ZombieDeath" event="script"><![CDATA[
+domodlib('Z-lib')
+
+function onDeath(cid)
+setZombiesToSpawnCount(getZombiesToSpawnCount() + 2)
+doCreatureSay(cid, "I'll be back!", 19)
+return true
+end
+]]></event>
+<globalevent name="ZombieGlobalThink" interval="5000" event="script"><![CDATA[
+domodlib('Z-lib')
+
+function onThink(interval, lastExecution, thinkInterval)
+if(getStorage(ZE_STATUS) == 2) then
+setZombiesToSpawnCount(getZombiesToSpawnCount()+1)
+local players = getZombiesEventPlayers()
+for i=1, getZombiesToSpawnCount() * 2 do
+if(getZombiesToSpawnCount() > 0 and spawnNewZombie()) then
+setZombiesToSpawnCount(getZombiesToSpawnCount()-1)
+end
+end
+end
+return true
+end
+]]></globalevent>
+<globalevent name="ZombieGlobalStartup" type="start" event="script"><![CDATA[
+domodlib('Z-lib')
+
+function onStartup()
+db.query("UPDATE `player_storage` SET `value` = 0 WHERE `key` = " .. ZE_isOnZombieArea .. ";")
+doSetStorage(ZE_STATUS, 0)
+doSetStorage(ZE_PLAYERS_NUMBER, ZE_DEFAULT_NUMBER_OF_PLAYERS)
+doSetStorage(ZE_ZOMBIES_TO_SPAWN, 0)
+doSetStorage(ZE_ZOMBIES_SPAWNED, 0)
+addZombiesEventBlockEnterPosition()
+return true
+end
+]]></globalevent>
+<movevent type="StepIn" actionid="5555" event="script"><![CDATA[
+domodlib('Z-lib')
+
+function onStepIn(cid, item, position, lastPosition, fromPosition, toPosition, actor)
+if(not isPlayer(cid)) then
+return true
+end
+if(getPlayerAccess(cid) >= ZE_ACCESS_TO_IGNORE_ARENA) then
+addPlayerToZombiesArea(cid)
+elseif(#getZombiesEventPlayers() < getZombiesEventPlayersLimit() and getStorage(ZE_STATUS) == 1) then
+addPlayerToZombiesArea(cid)
+local players_on_arena_count = #getZombiesEventPlayers()
+if(players_on_arena_count == getZombiesEventPlayersLimit()) then
+addZombiesEventBlockEnterPosition()
+doSetStorage(ZE_STATUS, 2)
+doBroadcastMessage("Zombie Arena Event started.")
+else
+doBroadcastMessage(getCreatureName(cid) .. " has entered a Zombie Arena. We still need " .. getZombiesEventPlayersLimit() - players_on_arena_count .. " players.")
+end
+else
+doTeleportThing(cid, fromPosition, true)
+addZombiesEventBlockEnterPosition()
+end
+return true
+end
+]]></movevent>
+<talkaction words="/zombiestart" access="5" event="script"><![CDATA[
+domodlib('Z-lib')
+
+function onSay(cid, words, param, channel)
+if(getStorage(ZE_STATUS) ~= 2) then
+local players_on_arena_count = #getZombiesEventPlayers()
+if(param == 'force') then
+if(players_on_arena_count > 0) then
+setZombiesEventPlayersLimit(players_on_arena_count )
+addZombiesEventBlockEnterPosition()
+doSetStorage(ZE_STATUS, 2)
+doBroadcastMessage("Zombie Arena Event started.")
+doPlayerSendTextMessage(cid, MESSAGE_STATUS_CONSOLE_BLUE, "Zombies event started.")
+else
+doPlayerSendTextMessage(cid, MESSAGE_STATUS_CONSOLE_BLUE, "Cannot start Zombies event. There is no players on arena.")
+end
+else
+if(param ~= '' and tonumber(param) > 0) then
+setZombiesEventPlayersLimit(tonumber(param))
+end
+removeZombiesEventBlockEnterPosition()
+doSetStorage(ZE_STATUS, 1)
+doPlayerSendTextMessage(cid, MESSAGE_STATUS_CONSOLE_BLUE, "Event started.")
+doPlayerBroadcastMessage(cid, "Zombie Arena Event teleport is opened. We are waiting for " .. getZombiesEventPlayersLimit() - players_on_arena_count .. " players to start.")
+end
+else
+doPlayerSendTextMessage(cid, MESSAGE_STATUS_CONSOLE_BLUE, "Zombies event is already running.")
+end
+return true
+end
+]]></talkaction>
+</mod>

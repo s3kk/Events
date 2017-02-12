@@ -1,1 +1,0 @@
-<talkaction log="yes" words="/zombiestart" access="4" event="script" value="zombie/onsay.lua"/>

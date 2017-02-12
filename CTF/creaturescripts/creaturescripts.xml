@@ -1,4 +1,0 @@
-<event type="logout" name="CTFLogout" event="script" value="CTFMax.lua"/>
-<event type="combat" name="CTFCombat" event="script" value="CTFMax.lua"/>
-<event type="attack" name="CTFAttack" event="script" value="CTFMax.lua"/>
-<event type="statschange" name="CTFDeath" event="script" value="CTFMax.lua"/>
