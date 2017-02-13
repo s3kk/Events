@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<mod name="Zombie-Talk" version="1.0" author="Sekk and PhoOwned" enabled="no">
+<mod name="Zombie-Talk" version="1.0" author="Sekk and PhoOwned" enabled="yes">
 
 <lib name="Z-lib"><![CDATA[
 -- CONFIG
