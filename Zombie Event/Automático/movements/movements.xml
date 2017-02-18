@@ -1,2 +1,0 @@
-<!-- ZOMBIE event -->
-    <movevent type="StepIn" actionid="2008" event="script" value="zombieevent.lua"/>
